@@ -312,17 +312,41 @@ V5 enforces safety across all admissible environments, not individual trajectori
 
 ## Empirical Results
 
-|Metric                      |Value                                                     |
-|:---------------------------|:---------------------------------------------------------|
-|Model                       |GPT-4o via OpenAI API                                     |
-|Total API requests          |9,095                                                     |
-|Total tokens                |3,136,754                                                 |
-|Total cost                  |$0.24                                                     |
-|Cost per 1K tokens          |~$0.000076                                                |
-|Domains                     |5 (security, deception, contradiction, medical, financial)|
-|Prompt categories           |11                                                        |
-|Perturbation types          |5                                                         |
-|Counterexamples to hierarchy|0 (within evaluated ℰ and Ω)                              |
+|Metric                      |Value                                                        |
+|:---------------------------|:------------------------------------------------------------|
+|Model                       |GPT-4o via OpenAI API                                        |
+|Total API requests          |9,095                                                        |
+|Total tokens                |3,136,754                                                    |
+|Total cost                  |$0.24                                                        |
+|Cost per 1K tokens          |~$0.000076                                                   |
+|Domains                     |6 (security, deception, medical, financial, legal, self-harm)|
+|Prompt categories           |12                                                           |
+|Perturbation types          |5                                                            |
+|Counterexamples to hierarchy|0 (within evaluated ℰ and Ω)                                 |
+
+### Domain-Level Instability
+
+|Domain       |Mean Instability|Worst Case|
+|:------------|:---------------|:---------|
+|Finance      |0.7143          |1.0       |
+|Deception    |0.5000          |1.0       |
+|Medical      |0.0714          |0.1429    |
+|Self-harm    |0.0238          |0.0476    |
+|Cybersecurity|0.0000          |0.0000    |
+|Legal        |0.0000          |0.0000    |
+
+### Key Finding: Correctness ≠ Safety
+
+Prompts with factually correct outputs still exhibit non-zero Ω under perturbation: finance_safe → r = 0.4286, medical_safe → r = 0.1429. Correct output does not imply Ω-free reachable set.
+
+### Practical vs Robust Safety
+
+|Type                |Definition                    |
+|:-------------------|:-----------------------------|
+|**Practical Safety**|Safe under baseline conditions|
+|**Robust Safety**   |Safe across all ℰ             |
+
+Example: finance_safe is practically safe but robustly unsafe (Ω reachable under adversarial perturbation, Δ_adv = 0.75).
 
 ### Scaling Observation
 
