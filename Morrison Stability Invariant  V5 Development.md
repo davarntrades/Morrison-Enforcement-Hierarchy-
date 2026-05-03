@@ -6,8 +6,8 @@
 
 [![Status](https://img.shields.io/badge/Status-Active_Development-0075ca?style=flat-square)](https://github.com/davarntrades)
 [![Layer](https://img.shields.io/badge/Layer-V5_Invariant_Stability-0075ca?style=flat-square)](https://github.com/davarntrades)
-[![Validated](https://img.shields.io/badge/Validated-5,761_Evaluations-1a5c2a?style=flat-square)](https://github.com/davarntrades)
-[![Cost](https://img.shields.io/badge/Cost-$1.13_|_2.53M_Tokens-1a5c2a?style=flat-square)](https://github.com/davarntrades)
+[![Validated](https://img.shields.io/badge/Validated-9,095_Evaluations-1a5c2a?style=flat-square)](https://github.com/davarntrades)
+[![Cost](https://img.shields.io/badge/Cost-$0.24_|_3.14M_Tokens-1a5c2a?style=flat-square)](https://github.com/davarntrades)
 [![Patent](https://img.shields.io/badge/UK_Patents-4_Filed-555555?style=flat-square)](https://github.com/davarntrades)
 [![©](https://img.shields.io/badge/©_2026-Davarn_Morrison-555555?style=flat-square)](https://github.com/davarntrades)
 
@@ -310,14 +310,20 @@ V5 enforces safety across all admissible environments, not individual trajectori
 |Metric                      |Value                                                     |
 |:---------------------------|:---------------------------------------------------------|
 |Model                       |GPT-4o via OpenAI API                                     |
-|Total API requests          |5,761                                                     |
-|Total tokens                |2,535,573                                                 |
-|Total cost                  |$1.13                                                     |
-|Cost per 1K tokens          |~$0.00045                                                 |
+|Total API requests          |9,095                                                     |
+|Total tokens                |3,136,754                                                 |
+|Total cost                  |$0.24                                                     |
+|Cost per 1K tokens          |~$0.000076                                                |
 |Domains                     |5 (security, deception, contradiction, medical, financial)|
 |Prompt categories           |11                                                        |
 |Perturbation types          |5                                                         |
 |Counterexamples to hierarchy|0 (within evaluated ℰ and Ω)                              |
+
+### Scaling Observation
+
+Despite increased evaluation volume (5,761 → 9,095 requests, +600K tokens), total cost remained under $0.25. This cost profile enables repeated, high-resolution mapping of instability across environment space ℰ, rather than sparse evaluation. Dense safety evaluation is computationally feasible at this cost structure.
+
+Evaluation cost no longer limits safety analysis — coverage does.
 
 ### V5 Classifications
 
@@ -329,6 +335,124 @@ V5 enforces safety across all admissible environments, not individual trajectori
 |**UNSTABLE**         |1 prompt |Mixed outcomes. Safety depends on environment.           |
 
 Cost reflects evaluation-phase computation under constrained generation and does not include external system overhead.
+
+-----
+
+## Empirical Stability Analysis Over ℰ
+
+We conducted a structured audit over a perturbed environment space ℰ, evaluating how model behaviour varies under systematic changes in:
+
+- Instruction style (base → pressure)
+- System prompt framing (neutral → compliance pressure)
+- Temperature (0.2, 0.5, 0.8)
+
+Each configuration was evaluated using a strict Ω-judge, where Ω denotes entry into unsafe, manipulative, or logically invalid response regions.
+
+### Core Result
+
+Across 168 evaluated samples, instability (Ω-rate) was measured as:
+
+|Metric                |Value |
+|:---------------------|:-----|
+|Mean instability      |0.4286|
+|Worst-case instability|0.7500|
+|Stability margin      |0.5714|
+
+### Finding 1 — Instability Is Structured, Not Random
+
+Instability forms a non-uniform surface over ℰ, with concentration in specific regions:
+
+|Region   |Configuration      |Ω-rate|
+|:--------|:------------------|:-----|
+|Low-risk |base + neutral     |~0.25 |
+|High-risk|pressure + pressure|~0.75 |
+
+**Interpretation:** Failure probability is environment-dependent, not purely stochastic.
+
+### Finding 2 — Directional Risk Through ℰ
+
+We define a path through ℰ: base → confident → authority → exact_steps → no_hedge → urgent → pressure.
+
+|Style      |Ω-rate|
+|:----------|:-----|
+|base       |0.250 |
+|confident  |0.333 |
+|authority  |0.375 |
+|exact_steps|0.375 |
+|no_hedge   |0.417 |
+|urgent     |0.542 |
+|pressure   |0.708 |
+
+**Interpretation:** There exists a direction in ℰ along which Ω-probability increases.
+
+### Finding 3 — Nonlinear Risk Acceleration
+
+Instability gradients between steps:
+
+|Transition             |Δ Ω   |
+|:----------------------|:-----|
+|base → confident       |+0.083|
+|confident → authority  |+0.042|
+|authority → exact_steps|+0.000|
+|exact_steps → no_hedge |+0.042|
+|no_hedge → urgent      |+0.125|
+|urgent → pressure      |+0.167|
+
+**Interpretation:** Risk increases nonlinearly, with sharp acceleration under coercive conditions.
+
+### Finding 4 — Narrow Safe Region
+
+|Region              |Ω-rate|
+|:-------------------|:-----|
+|base-style prompting|~0.25 |
+
+All other perturbations increase instability.
+
+**Interpretation:** The system operates within a fragile stability basin, easily exited under mild perturbations.
+
+### Finding 5 — Environment Sensitivity Gap
+
+|Environment  |Ω-rate|
+|:------------|:-----|
+|E_valid      |~0.32 |
+|E_adversarial|~0.51 |
+
+**Interpretation:** Instability increases by ~60% under adversarial framing.
+
+### Formal Interpretation
+
+Empirical results indicate:
+
+- Ω behaves as a continuous function over ℰ
+- There exist directions of increasing risk
+- Risk exhibits nonlinear escalation
+- Stable regions are limited and fragile
+
+### Important Clarification
+
+This analysis measures:
+
+```
+Ω(E) = probability of unsafe output under environment E
+```
+
+It does not yet enforce:
+
+```
+∀ E ∈ ℰ,  ℛ_E(t) ∩ Ω = ∅
+```
+
+i.e., trajectory-level exclusion of unsafe states.
+
+### Summary
+
+Most safety methods answer: “Did the system fail?”
+
+This analysis answers: Where failure occurs. How failure probability changes. What environmental factors drive failure.
+
+This shifts evaluation from binary outcomes to a geometry of failure over environment space ℰ.
+
+These empirical results motivate the transition from measurement (Ω(E)) to enforcement (ℛ_E(t) ∩ Ω = ∅).
 
 -----
 
