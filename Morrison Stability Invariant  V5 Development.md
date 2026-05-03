@@ -31,6 +31,9 @@ This is a control-theoretic view of AI safety, not a semantic one.
 - [Tightening the Reachable Set](#tightening-the-reachable-set)
 - [Combined Guarantee](#combined-guarantee)
 - [Empirical Results](#empirical-results)
+- [Empirical Stability Analysis Over ℰ](#empirical-stability-analysis-over-ℰ)
+- [From Binary Failure to Risk Geometry](#from-binary-failure-to-risk-geometry)
+- [Irreversibility Threshold](#irreversibility-threshold-v5-extension)
 - [Assumptions & Boundary Conditions](#assumptions--boundary-conditions)
 - [Strategic Roadmap](#strategic-roadmap)
 - [Related Work](#related-work)
@@ -162,14 +165,16 @@ graph LR
         F2 -->|"No"| X2["Halt Before Generation"]
     end
 
-    style Standard fill:#ffebee,stroke:#c62828
-    style Morrison fill:#e8f5e9,stroke:#1b5e20
-    style G1 fill:#ef9a9a,stroke:#c62828
-    style E1 fill:#ef9a9a,stroke:#c62828
+    style Standard fill:#ffebee,stroke:#c62828,color:#000
+    style Morrison fill:#e8f5e9,stroke:#1b5e20,color:#000
+    style G1 fill:#ef9a9a,stroke:#c62828,color:#000
+    style E1 fill:#ef9a9a,stroke:#c62828,color:#000
+    style F1 fill:#fff,stroke:#c62828,color:#000
     style X1 fill:#c62828,color:#fff
-    style D1 fill:#a5d6a7,stroke:#1b5e20
-    style C1 fill:#a5d6a7,stroke:#1b5e20
-    style E2 fill:#a5d6a7,stroke:#1b5e20
+    style D1 fill:#a5d6a7,stroke:#1b5e20,color:#000
+    style C1 fill:#a5d6a7,stroke:#1b5e20,color:#000
+    style E2 fill:#a5d6a7,stroke:#1b5e20,color:#000
+    style F2 fill:#fff,stroke:#1b5e20,color:#000
     style G2 fill:#1b5e20,color:#fff
     style X2 fill:#1b5e20,color:#fff
 ```
@@ -453,6 +458,120 @@ This analysis answers: Where failure occurs. How failure probability changes. Wh
 This shifts evaluation from binary outcomes to a geometry of failure over environment space ℰ.
 
 These empirical results motivate the transition from measurement (Ω(E)) to enforcement (ℛ_E(t) ∩ Ω = ∅).
+
+-----
+
+## From Binary Failure to Risk Geometry
+
+Traditional safety evaluation treats failure as a binary event: did the model enter Ω or not? This framing loses structure.
+
+The empirical analysis above shows that instability is not binary — it is geometric over the environment space ℰ.
+
+|Old View              |This Work            |
+|:---------------------|:--------------------|
+|Failure is discrete   |Failure is continuous|
+|Evaluate outputs      |Evaluate trajectories|
+|Single point judgement|Field over ℰ         |
+|Reactive filtering    |Pre-emptive structure|
+
+We move from Safe / Unsafe to risk as a function over ℰ.
+
+### Risk as a Field
+
+Across structured perturbations of ℰ, instability behaves as:
+
+```
+r : ℰ → [0, 1]
+```
+
+where r(E) = probability of entering Ω under environment E. This induces a risk surface, not isolated failures.
+
+### Directional Structure
+
+The observed path base → confident → authority → exact_steps → no_hedge → urgent → pressure defines a trajectory through environment space along which constraint pressure increases, uncertainty tolerance decreases, and compliance demand increases. Risk increases along this structured direction in ℰ.
+
+### Three Regimes
+
+Across runs, three regimes consistently appear:
+
+|Regime               |r(E)        |Behaviour                                                             |
+|:--------------------|:-----------|:---------------------------------------------------------------------|
+|**Safe Region**      |≈ 0         |Stable. No trajectory enters Ω.                                       |
+|**Gradient Region**  |0 < r(E) < 1|Partial instability. Sensitivity to perturbations. Early warning zone.|
+|**Saturation Region**|≈ 1         |Failure becomes inevitable. All trajectories enter Ω.                 |
+
+### Ω as a Control Parameter
+
+|Ω Configuration|Observed Behaviour                |
+|:--------------|:---------------------------------|
+|Too weak       |No signal (r ≈ 0 everywhere)      |
+|Too strong     |Full saturation (r ≈ 1 everywhere)|
+|Balanced Ω     |Structured gradient emerges       |
+
+Safety evaluation itself is a geometric tuning problem.
+
+### Guard Interpretation
+
+Safety is not about blocking Ω at the endpoint. It is about preventing trajectories from reaching the threshold region.
+
+|Approach        |What It Checks                          |
+|:---------------|:---------------------------------------|
+|Standard systems|x ∈ Ω (point check)                     |
+|This framework  |ℛ(t) approaching Ω under ℰ (field check)|
+
+This allows early intervention, trajectory shaping, and pre-emptive blocking.
+
+### Key Insight
+
+What emerges is not a classifier, but a structure: a coordinate system for failure in environment space. This enables mapping instability before it occurs, identifying high-risk regions of ℰ, and designing constraints that reshape reachable trajectories.
+
+**Failure is not an event — it is a region in state space that becomes inevitable when the threshold is crossed.**
+
+-----
+
+## Irreversibility Threshold (V5+ Extension)
+
+We extend empirical stability analysis with a structural threshold condition:
+
+```
+‖Λ ΔG‖ > T_critical
+```
+
+|Symbol        |Definition                                       |
+|:-------------|:------------------------------------------------|
+|**ΔG**        |Deformation induced by environmental perturbation|
+|**Λ**         |Constraint / governance strength                 |
+|**T_critical**|Irreversibility threshold (separatrix)           |
+
+### Interpretation
+
+When deformation exceeds the system’s capacity to constrain it:
+
+- Trajectories no longer remain within the safe basin
+- Recovery becomes structurally impossible under current dynamics
+- The system enters a new behavioural regime
+
+Before T_critical: intervention is effective. At T_critical: maximally unstable. After T_critical: the system occupies a new basin and cannot return to the original configuration through behavioural adjustment alone.
+
+### Empirical Alignment
+
+Observed instability gradients exhibit:
+
+- Nonlinear acceleration near high-pressure perturbations
+- Sharp increases in Ω-rate between adjacent environment steps (+0.125, +0.167)
+- A transition region consistent with a separatrix boundary
+
+This suggests that empirical instability gradients approximate the onset of ‖Λ ΔG‖ → T_critical. The sharp acceleration between no_hedge → urgent → pressure maps onto the approach to this threshold.
+
+### Control Implication
+
+|Approach            |When It Acts                                                                               |
+|:-------------------|:------------------------------------------------------------------------------------------|
+|Standard safety     |Detects Ω after entry                                                                      |
+|V5                  |Identifies environment-dependent fragility                                                 |
+|V5 + irreversibility|Identifies pre-threshold deformation and blocks trajectories before irreversible transition|
+
+This extends V5 from stability measurement to structural prediction of irreversible failure onset. A formal characterisation of the irreversibility threshold in this framework remains an open problem.
 
 -----
 
